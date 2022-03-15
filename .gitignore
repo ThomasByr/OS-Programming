@@ -1,0 +1,23 @@
+# Ignore all files
+*
+
+# Uningnore files with extensions and makefile
+!*.*
+!Makefile
+
+# Uningnore directories
+!*/
+
+# *.pdf
+*.Identifier
+*.tgz
+
+# C extensions
+*.so
+*.o
+
+# VS Code
+.vscode
+
+# VS
+.vs/
