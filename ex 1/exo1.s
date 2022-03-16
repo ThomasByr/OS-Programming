@@ -1,3 +1,4 @@
+//! ./z33-cli run {__file__} {__function__}
 
 calcul:
     // x*x - 2*x*y - y*y
@@ -25,37 +26,29 @@ calcul:
 prodscal:
     // scallar product between two vectors
     push %b
-    call get_last_arg
-    push 0 // p
-    push 0 // i
+    push 0            // p
+    push 0            // i
     jmp prodscal_for
 prodscal_for:
-    ld [%sp], %b
-    cmp %b, %a
+    ld [%sp], %b      // i
+    ld [%sp+6], %a    // n
+    cmp %b, %a        // i >= n ?
     jge prodscal_end
-    add 3, %sp
-    add %b, %sp
-    add %a, %b
-    ld [%sp+1], %a
-    push %b
-    add 1, %sp
-    add %a, %sp
+    ld [%sp+4], %a    // int *v1
+    add %b, %a        // v1[i]
+    ld [%a], %a
+    push %a
+    ld [%sp+6], %a    // int *v2 (we pushed a before)
+    add %b, %a        // v2[i]
+    ld [%a], %a
+    pop %b
+    mul %b, %a        // v1[i] * v2[i]
     ld [%sp+1], %b
-    push %b
-    add 1, %sp
-    call get_last_arg
-    sub %b, %sp
-    sub 3, %sp
-    pop %b
-    pop %a
-    mul %b, %a
-    pop %b
-    sub %b, %sp
+    add %a, %b        // p += v1[i] * v2[i]
+    st %b, [%sp+1]
+    ld [%sp], %b
     add 1, %b
-    push %b
-    ld [%sp+1], %b
-    add %b, %a
-    st %a, [%sp+1]
+    st %b, [%sp]
     jmp prodscal_for
 prodscal_end:
     add 1, %sp
@@ -64,25 +57,13 @@ prodscal_end:
     rtn
 
 
-get_last_arg:
-    // get the last argument of a function
-    push %b
-    ld 9998, %a
-    sub %sp, %b
-    add %b, %sp
-    ld [%sp+1], %a
-    sub %b, %sp
-    pop %b
-    rtn
-
-
 racine:
     // square root of a number by dichotomy
     push %b
-    push 1
-    ld [%sp+3], %b
-    push %b
-    ld [%sp], %a
+    push 1            // inf
+    ld [%sp+3], %b    // n
+    push %b           // sup
+    ld [%sp], %a      // r = inf + (sup - inf) / 2
     sub 1, %a
     div 2, %a
     add 1, %a
@@ -93,7 +74,7 @@ racine_loop:
     ld [%sp+5], %a
     ld [%sp], %b
     mul %b, %b
-    cmp %b, %a
+    cmp %b, %a        // n <= r*r ?
     jle racine_inwhile
     jmp racine_if
 racine_inwhile:
@@ -101,7 +82,7 @@ racine_inwhile:
     ld [%sp], %b
     add 1, %b
     mul %b, %b
-    cmp %b, %a
+    cmp %b, %a        // n <= (r+1)*(r+1) ?
     jle racine_if
     jmp racine_end
 racine_if:
@@ -109,26 +90,26 @@ racine_if:
     ld [%sp], %b
     mul %b, %b
     ld [%sp+5], %a
-    cmp %b, %a
+    cmp %b, %a        // n <= r*r ?
     jle racine_else
     ld [%sp], %b
-    st %b, [%sp+1]
+    st %b, [%sp+1]    // inf = r
     ld [%sp+1], %a
     ld [%sp+2], %b
     sub %b, %a
     div 2, %a
     add %b, %a
-    st %a, [%sp]
+    st %a, [%sp]      // r = inf + (sup - inf) / 2
     jmp racine_loop
 racine_else:
     // if (r+1)*(r+1) <= n
     ld [%sp], %b
-    st %b, [%sp+2]
+    st %b, [%sp+2]    // sup = r
     ld [%sp+1], %a
     sub %b, %a
     div 2, %a
     add %b, %a
-    st %a, [%sp]
+    st %a, [%sp]      // r = inf + (sup - inf) / 2
     jmp racine_loop
 racine_end:
     pop %a
@@ -143,18 +124,21 @@ main_calcul:
     call calcul
     reset
 
+v1:
+    .word 1
+    .word 2
+    .word 3
+v2:
+    .word 4
+    .word 5
+    .word 6
 
 main_prodscal:
     push 3
-    push 1
-    push 2
-    push 3
-    push 1
-    push 2
-    push 3
+    push v1
+    push v2
     call prodscal
     reset
-
 
 main_racine:
     push 122
