@@ -69,6 +69,7 @@ get_last_arg:
     push %b
     ld 9998, %a
     sub %sp, %b
+    add %b, %sp
     ld [%sp+1], %a
     sub %b, %sp
     pop %b
