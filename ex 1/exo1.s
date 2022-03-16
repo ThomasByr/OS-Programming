@@ -66,10 +66,9 @@ racine:
     push 1                   // inf
     ld [%sp+3], %b           // n
     push %b                  // sup
-    ld [%sp], %a             // r = inf + (sup - inf) / 2
-    sub 1, %a
-    div 2, %a
+    ld [%sp], %a             // r = (inf+sup) / 2
     add 1, %a
+    div 2, %a
     push %a
     jmp racine_loop
 racine_loop:
@@ -99,20 +98,18 @@ racine_if:
     st %b, [%sp+1]           // inf = r
     ld [%sp+1], %a
     ld [%sp+2], %b
-    sub %b, %a
-    div 2, %a
     add %b, %a
-    st %a, [%sp]             // r = inf + (sup - inf) / 2
+    div 2, %a
+    st %a, [%sp]             // r = (inf+sup) / 2
     jmp racine_loop
 racine_else:
     // if (r+1)*(r+1) <= n
     ld [%sp], %b
     st %b, [%sp+2]           // sup = r
     ld [%sp+1], %a
-    sub %b, %a
-    div 2, %a
     add %b, %a
-    st %a, [%sp]             // r = inf + (sup - inf) / 2
+    div 2, %a
+    st %a, [%sp]             // r = (inf+sup) / 2
     jmp racine_loop
 racine_end:
     pop %a
