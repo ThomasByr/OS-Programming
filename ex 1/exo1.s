@@ -2,22 +2,23 @@
 
 calcul:
     // x*x - 2*x*y - y*y
+    // [b, rtn, x, y]
     push %b
 
-    ld [%sp+2], %a // x
-    ld [%sp+3], %b // y
+    ld [%sp+2], %a           // x
+    ld [%sp+3], %b           // y
 
     mul 2, %a
-    mul %b, %a     // 2xy
+    mul %b, %a               // 2xy
 
-    ld [%sp+2], %b // x
-    mul %b, %b     // xx
-    sub %a, %b     // xx - 2xy
+    ld [%sp+2], %b           // x
+    mul %b, %b               // xx
+    sub %a, %b               // xx - 2xy
     swap %a, %b
 
-    ld [%sp+3], %b // y
-    mul %b, %b     // yy
-    sub %b, %a     // xx - 2xy - yy
+    ld [%sp+3], %b           // y
+    mul %b, %b               // yy
+    sub %b, %a               // xx - 2xy - yy
 
     pop %b
     rtn
@@ -25,29 +26,30 @@ calcul:
 
 prodscal:
     // scallar product between two vectors
+    // [i, p, b, rtn, v1, v2, n]
     push %b
-    push 0            // p
-    push 0            // i
+    push 0                   // p
+    push 0                   // i
     jmp prodscal_for
 prodscal_for:
-    ld [%sp], %b      // i
-    ld [%sp+6], %a    // n
-    cmp %b, %a        // i >= n ?
+    ld [%sp], %b             // i
+    ld [%sp+6], %a           // n
+    cmp %b, %a               // i >= n ?
     jge prodscal_end
-    ld [%sp+4], %a    // int *v1
-    add %b, %a        // v1[i]
+    ld [%sp+4], %a           // int *v1
+    add %b, %a               // v1[i]
     ld [%a], %a
     push %a
-    ld [%sp+6], %a    // int *v2 (we pushed a before)
-    add %b, %a        // v2[i]
+    ld [%sp+6], %a           // int *v2 (we pushed a before so +6)
+    add %b, %a               // v2[i]
     ld [%a], %a
     pop %b
-    mul %b, %a        // v1[i] * v2[i]
+    mul %b, %a               // v1[i] * v2[i]
     ld [%sp+1], %b
-    add %a, %b        // p += v1[i] * v2[i]
+    add %a, %b               // p += v1[i] * v2[i]
     st %b, [%sp+1]
     ld [%sp], %b
-    add 1, %b
+    add 1, %b                // i++
     st %b, [%sp]
     jmp prodscal_for
 prodscal_end:
@@ -59,11 +61,12 @@ prodscal_end:
 
 racine:
     // square root of a number by dichotomy
+    // [r, sup, inf, b, rtn, n]
     push %b
-    push 1            // inf
-    ld [%sp+3], %b    // n
-    push %b           // sup
-    ld [%sp], %a      // r = inf + (sup - inf) / 2
+    push 1                   // inf
+    ld [%sp+3], %b           // n
+    push %b                  // sup
+    ld [%sp], %a             // r = inf + (sup - inf) / 2
     sub 1, %a
     div 2, %a
     add 1, %a
@@ -74,7 +77,7 @@ racine_loop:
     ld [%sp+5], %a
     ld [%sp], %b
     mul %b, %b
-    cmp %b, %a        // n <= r*r ?
+    cmp %b, %a               // n <= r*r ?
     jle racine_inwhile
     jmp racine_if
 racine_inwhile:
@@ -82,7 +85,7 @@ racine_inwhile:
     ld [%sp], %b
     add 1, %b
     mul %b, %b
-    cmp %b, %a        // n <= (r+1)*(r+1) ?
+    cmp %b, %a               // n <= (r+1)*(r+1) ?
     jle racine_if
     jmp racine_end
 racine_if:
@@ -90,26 +93,26 @@ racine_if:
     ld [%sp], %b
     mul %b, %b
     ld [%sp+5], %a
-    cmp %b, %a        // n <= r*r ?
+    cmp %b, %a               // n <= r*r ?
     jle racine_else
     ld [%sp], %b
-    st %b, [%sp+1]    // inf = r
+    st %b, [%sp+1]           // inf = r
     ld [%sp+1], %a
     ld [%sp+2], %b
     sub %b, %a
     div 2, %a
     add %b, %a
-    st %a, [%sp]      // r = inf + (sup - inf) / 2
+    st %a, [%sp]             // r = inf + (sup - inf) / 2
     jmp racine_loop
 racine_else:
     // if (r+1)*(r+1) <= n
     ld [%sp], %b
-    st %b, [%sp+2]    // sup = r
+    st %b, [%sp+2]           // sup = r
     ld [%sp+1], %a
     sub %b, %a
     div 2, %a
     add %b, %a
-    st %a, [%sp]      // r = inf + (sup - inf) / 2
+    st %a, [%sp]             // r = inf + (sup - inf) / 2
     jmp racine_loop
 racine_end:
     pop %a
