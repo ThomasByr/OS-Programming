@@ -24,6 +24,12 @@
             panic(1, #op); \
     } while (0)
 
+#define TCHK(op)                \
+    do {                        \
+        if ((errno = (op)) > 0) \
+            panic(1, #op);      \
+    } while (0)
+
 noreturn void panic(int syserr, const char *msg, ...) {
     va_list ap;
 
@@ -52,9 +58,7 @@ void *func(void *args) {
     char *c = info->c;
 
     for (int k = 0; k < info->p; k++) {
-        if ((errno = pthread_barrier_wait(info->bar)) > 0) {
-            panic(1, "pthread_barrier_wait");
-        }
+        TCHK(pthread_barrier_wait(info->bar));
         c[i] = k % 2 ? '-' : '#';
         if ((errno = pthread_barrier_wait(info->bar)) > 0) {
             panic(1, "pthread_barrier_wait");
@@ -96,9 +100,7 @@ int main(int argc, char *argv[]) {
     }
 
     for (i = 0; i < n; i++) {
-        if ((errno = pthread_join(info[i].id, NULL)) > 0) {
-            panic(1, "pthread_join");
-        }
+        TCHK(pthread_join(info[i].id, NULL));
     }
     CHK(pthread_barrier_destroy(&bar));
 
