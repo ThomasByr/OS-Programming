@@ -16,8 +16,8 @@ noreturn void panic(int syserr, const char *restrict fmt, ...) {
 }
 
 int strtoi(const char *restrict nptr, int (*f)(int)) {
-    char *endptr;                      // for strtol
-    int x = strtol(nptr, &endptr, 10); // base 10
+    char *endptr;
+    int x = strtol(nptr, &endptr, 10);
 
     if (endptr == nptr || *endptr != '\0') {
         panic(1, "must be a number");
