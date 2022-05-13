@@ -50,9 +50,20 @@ void debug(int first, const char *restrict fmt, ...) {
     if (VERBOSE) {
         va_start(ap, fmt);
         if (first) {
-            fprintf(stdout, FG_GRN "DEBUG: " RST);
+            fprintf(stdout, FG_GRN "  DEBUG: " RST);
         }
         vfprintf(stdout, fmt, ap);
         va_end(ap);
     }
+}
+
+void info(int first, const char *restrict fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    if (first) {
+        fprintf(stdout, FG_BLU "   INFO: " RST);
+    }
+    vfprintf(stdout, fmt, ap);
+    va_end(ap);
 }

@@ -1,4 +1,5 @@
-#include <dirent.h>
+#pragma once
+
 #include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
@@ -86,7 +87,15 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...);
 /**
  * @brief print debug message if VERBOSE is set.
  *
- * @param fmt formated message to print
  * @param first 1 if the first message of a series, 0 otherwise
+ * @param fmt formated message to print
  */
 void debug(int first, const char *restrict fmt, ...);
+
+/**
+ * @brief print an info message.
+ *
+ * @param first 1 if the first message of a series, 0 otherwise
+ * @param fmt formated message to print
+ */
+void info(int first, const char *restrict fmt, ...);

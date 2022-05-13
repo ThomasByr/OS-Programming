@@ -18,7 +18,7 @@ int group_by_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
             if (strcmp(prd[i], prd[j]) == 0) {
                 qty[i] += qty[j];
                 for (k = j; k < n - 1; k++) {
-                    strcpy(prd[k], prd[k + 1]);
+                    strncpy(prd[k], prd[k + 1], PRD_MAX_LEN);
                     qty[k] = qty[k + 1];
                 }
                 n--;
@@ -30,7 +30,7 @@ int group_by_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
 }
 
 /**
- * @brief prints the list of products and quantities if VERBOSE is set.
+ * @brief print the list of products and quantities if VERBOSE is set.
  *
  * @param prd product names
  * @param qty quantities
@@ -43,6 +43,25 @@ void display_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
         debug(0, " (%s: %d)", prd[i], qty[i]);
     }
     debug(0, "\n");
+}
+
+/**
+ * @brief buy a product from the shop.
+ *
+ * @param prd product name
+ * @param qty quantity to buy
+ * @return int - 1 if successfull, 0 otherwise
+ */
+int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
+    int fd, success = 1;
+    // CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
+    (void)fd;
+
+    debug(1, "buying %d product from shop %s\n", qty, prd);
+
+    // todo: implement
+
+    return success;
 }
 
 int main(int argc, char *argv[]) {
@@ -71,5 +90,13 @@ int main(int argc, char *argv[]) {
 
     /* performing the action */
 
-    // todo: implement
+    int r;
+    for (int i = 0; i < n; i++) {
+        r = buy_prd(prd[i], qty[i]);
+        if (r == 0) {
+            panic(0, "failed to buy %d %s", qty[i], prd[i]);
+        }
+    }
+
+    return EXIT_SUCCESS;
 }
