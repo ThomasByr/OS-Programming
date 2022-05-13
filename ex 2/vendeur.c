@@ -3,13 +3,46 @@
 // strict negative quantity for a product is not allowed
 int f(int qty) { return qty >= 0; }
 
-// todo: implement
-void close_shop(char *prd) { (void)prd; }
+/**
+ * @brief closes a shop by removing contents from the stock.
+ *
+ * @param prd product name
+ */
+void close_shop(char *prd) {
+    int fd;
+    debug(1, "closing shop for %s\n", prd);
+    CHK(fd = open(prd, O_RDWR | O_TRUNC));
+    CHK(close(fd));
+}
 
-// todo: implement
+/**
+ * @brief add a product to the stock by either adding or creating it.
+ *
+ * @param prd product name
+ * @param qty quantity to add or create
+ */
 void add_to_shop(char *prd, int qty) {
-    (void)prd;
-    (void)qty;
+    int fd, old_qty, n;
+    CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
+
+    debug(1, "adding %d product to shop %s\n", qty, prd);
+
+    // is the file empty?
+    if ((n = read(fd, &old_qty, sizeof(old_qty))) != sizeof(old_qty)) {
+        old_qty = 0;
+    }
+    if (n == -1) {
+        panic(1, "read");
+    }
+
+    debug(0, "\told_qty = %d -> new_qty = %d\n", old_qty, old_qty + qty);
+
+    // update the file
+    old_qty += qty;
+    CHK(lseek(fd, 0, SEEK_SET));
+    CHK(write(fd, &old_qty, sizeof(old_qty)));
+
+    CHK(close(fd));
 }
 
 int main(int argc, char *argv[]) {

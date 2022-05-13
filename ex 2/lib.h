@@ -38,6 +38,25 @@
 #define VERBOSE 1      // 0 or 1
 #define PRD_MAX_LEN 10 // max length of product name
 
+#define RST "\x1b[m\x1b[0m"
+
+#define FG_RED "\x1b[0;31m"
+#define FG_GRN "\x1b[0;32m"
+#define FG_YEL "\x1b[0;33m"
+#define FG_BLU "\x1b[0;34m"
+#define FG_MAG "\x1b[0;35m"
+#define FG_CYN "\x1b[0;36m"
+#define FG_WHT "\x1b[0;37m"
+
+#define BG_BLU "\x1b[40m"
+#define BG_RED "\x1b[41m"
+#define BG_GRN "\x1b[42m"
+#define BG_ORA "\x1b[43m"
+#define BG_CYN1 "\x1b[44m"
+#define BG_YEL "\x1b[45m"
+#define BG_CYN2 "\x1b[46m"
+#define BG_WHT "\x1b[47m"
+
 /**
  * @brief panic with a message.
  *
@@ -63,3 +82,11 @@ int strtoi(const char *restrict nptr, int (*f)(int));
  * @param fmt suitable format string (max `PRD_MAX_LEN` characters)
  */
 void set_prd(char *restrict prd, const char *restrict fmt, ...);
+
+/**
+ * @brief print debug message if VERBOSE is set.
+ *
+ * @param fmt formated message to print
+ * @param first 1 if the first message of a series, 0 otherwise
+ */
+void debug(int first, const char *restrict fmt, ...);

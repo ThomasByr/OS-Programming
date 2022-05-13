@@ -10,7 +10,7 @@
 #		  sur Moodle
 #
 
-CFLAGS = -g -Wall -Wextra -Werror
+CFLAGS = -g -Wall -Wextra -Werror -Wpedantic
 LDLIBS = -g -lpthread -lrt
 
 # Les fichiers attendus pour le rendu sur le devoir Moodle
@@ -41,6 +41,6 @@ devoir.tgz: $(DEVOIR)
 clean:
 	rm -f *.o $(PROGS)
 	rm -f PROD*			# fichiers utilisés pour les tests
-	rm -f tags core # moodle.tgz
+	rm -f tags core     # moodle.tgz
 	rm -rf moodle
 	rm -f devoir.tgz

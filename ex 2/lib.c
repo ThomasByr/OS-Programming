@@ -43,3 +43,16 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...) {
 
     prd[PRD_MAX_LEN] = '\0';
 }
+
+void debug(int first, const char *restrict fmt, ...) {
+    va_list ap;
+
+    if (VERBOSE) {
+        va_start(ap, fmt);
+        if (first) {
+            fprintf(stdout, FG_GRN "DEBUG: " RST);
+        }
+        vfprintf(stdout, fmt, ap);
+        va_end(ap);
+    }
+}
