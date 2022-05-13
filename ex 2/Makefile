@@ -41,6 +41,6 @@ devoir.tgz: $(DEVOIR)
 clean:
 	rm -f *.o $(PROGS)
 	rm -f PROD*			# fichiers utilisés pour les tests
-	rm -f tags core     # moodle.tgz
+	rm -f tags core		# moodle.tgz
 	rm -rf moodle
 	rm -f devoir.tgz

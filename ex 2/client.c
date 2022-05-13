@@ -1,7 +1,7 @@
 #include "lib.h"
 
-// strict negative quantity for a product is not allowed
-int f(int qty) { return qty >= 0; }
+// negative or null quantity for a product is not allowed
+int f(int qty) { return qty > 0; }
 
 /**
  * @brief group redundant products in the list.
