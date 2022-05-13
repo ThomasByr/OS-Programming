@@ -50,10 +50,10 @@ void display_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
  *
  * @param prd product name
  * @param qty quantity to buy
- * @return int - 1 if successfull, 0 otherwise
+ * @return int - number of products bought
  */
 int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
-    int fd, success = 1;
+    int fd, num = 0;
     // CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
     (void)fd;
 
@@ -61,7 +61,7 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
 
     // todo: implement
 
-    return success;
+    return num;
 }
 
 int main(int argc, char *argv[]) {
@@ -93,6 +93,8 @@ int main(int argc, char *argv[]) {
     int r;
     for (int i = 0; i < n; i++) {
         r = buy_prd(prd[i], qty[i]);
+        // todo: loop until all products are bought
+
         if (r == 0) {
             panic(0, "failed to buy %d %s", qty[i], prd[i]);
         }

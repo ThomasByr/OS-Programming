@@ -11,8 +11,21 @@ int f(int qty) { return qty >= 0; }
 void close_shop(char prd[PRD_MAX_LEN + 1]) {
     int fd;
     debug(1, "closing shop for %s\n", prd);
-    CHK(fd = open(prd, O_RDWR | O_TRUNC));
-    CHK(close(fd));
+
+    // named semaphore, created if not existing
+    sem_t *sem = sem_open(prd, O_CREAT, 0666, 1);
+    if (sem == SEM_FAILED) {
+        panic(1, "sem_open failed for %s\n", prd);
+    }
+
+    TCHK(sem_wait(sem)); // lock the semaphore
+
+    CHK(fd = open(prd, O_RDWR | O_TRUNC | O_CREAT, 0666)); // delete contents
+    CHK(close(fd));                                        // close the file
+
+    TCHK(sem_post(sem));   // unlock the semaphore
+    TCHK(sem_close(sem));  // close the semaphore
+    TCHK(sem_unlink(prd)); // remove the semaphore
 }
 
 /**
@@ -22,25 +35,25 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
  * @param qty quantity to add or create
  */
 void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
-    int fd, old_qty, n;
+    int fd, n;
+    struct shop s;
     CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
 
     debug(1, "adding %d product to shop %s\n", qty, prd);
 
-    // is the file empty?
-    if ((n = read(fd, &old_qty, sizeof(old_qty))) != sizeof(old_qty)) {
-        old_qty = 0;
-    }
+    if ((n = read(fd, &s, sizeof(s))) != sizeof(s)) {
+        s.qty = 0;
+    } // is the file empty?
     if (n == -1) {
         panic(1, "read");
-    }
+    } // error reading file
 
-    debug(0, "\told_qty = %d -> new_qty = %d\n", old_qty, old_qty + qty);
+    debug(0, "\told_qty = %d -> new_qty = %d\n", s.qty, s.qty + qty);
 
     // update the file
-    old_qty += qty;
+    s.qty += qty;
     CHK(lseek(fd, 0, SEEK_SET));
-    CHK(write(fd, &old_qty, sizeof(old_qty)));
+    CHK(write(fd, &s, sizeof(s)));
 
     CHK(close(fd));
 }

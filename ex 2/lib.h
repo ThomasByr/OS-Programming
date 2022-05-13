@@ -59,6 +59,14 @@
 #define BG_WHT "\x1b[47m"
 
 /**
+ * @brief structure to handle the content of a shop.
+ *
+ */
+struct shop {
+    int qty; // quantity of the product
+};
+
+/**
  * @brief panic with a message.
  *
  * @param syserr 1 if errno is set, 0 otherwise
