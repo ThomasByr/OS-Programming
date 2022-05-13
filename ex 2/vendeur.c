@@ -8,7 +8,7 @@ int f(int qty) { return qty >= 0; }
  *
  * @param prd product name
  */
-void close_shop(char *prd) {
+void close_shop(char prd[PRD_MAX_LEN + 1]) {
     int fd;
     debug(1, "closing shop for %s\n", prd);
     CHK(fd = open(prd, O_RDWR | O_TRUNC));
@@ -21,7 +21,7 @@ void close_shop(char *prd) {
  * @param prd product name
  * @param qty quantity to add or create
  */
-void add_to_shop(char *prd, int qty) {
+void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     int fd, old_qty, n;
     CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
 
