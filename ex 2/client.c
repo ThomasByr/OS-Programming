@@ -93,7 +93,8 @@ int main(int argc, char *argv[]) {
     int r;
     for (int i = 0; i < n; i++) {
         r = buy_prd(prd[i], qty[i]);
-        // todo: loop until all products are bought
+        // todo:
+        // loop until all products are bought or no more products are available
 
         if (r == 0) {
             panic(0, "failed to buy %d %s", qty[i], prd[i]);

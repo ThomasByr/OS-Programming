@@ -33,15 +33,40 @@ int strtoi(const char *restrict nptr, int (*f)(int)) {
 }
 
 void set_prd(char *restrict prd, const char *restrict fmt, ...) {
+    int n;
     va_list ap;
 
     va_start(ap, fmt);
-    if (vsnprintf(prd, PRD_MAX_LEN + 1, fmt, ap) > PRD_MAX_LEN) {
+    if ((n = vsnprintf(prd, PRD_MAX_LEN + 1, fmt, ap)) > PRD_MAX_LEN) {
         panic(0, "product name too long");
+    }
+    if (n < 0) {
+        panic(0, "vsnprintf failed");
     }
     va_end(ap);
 
     prd[PRD_MAX_LEN] = '\0';
+}
+
+void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...) {
+    int n;
+    va_list ap;
+
+    va_start(ap, fmt);
+    if ((n = vsnprintf(sem_name, PRD_MAX_LEN + 1, fmt, ap)) > PRD_MAX_LEN) {
+        panic(0, "product name too long");
+    }
+    if (n < 0) {
+        panic(0, "vsnprintf failed");
+    }
+    va_end(ap);
+
+    char *r = strncat(sem_name, act ? ".buy" : ".sell", SEM_DFF_LEN);
+    if (r == NULL) {
+        panic(0, "strcat failed");
+    }
+
+    sem_name[SEM_MAX_LEN] = '\0';
 }
 
 void debug(int first, const char *restrict fmt, ...) {

@@ -13,9 +13,12 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     debug(1, "closing shop for %s\n", prd);
 
     // named semaphore, created if not existing
-    sem_t *sem = sem_open(prd, O_CREAT, 0666, 1);
+    char name[SEM_MAX_LEN + 1];
+    set_sem_name(0, name, "%s", prd);
+
+    sem_t *sem = sem_open(name, O_CREAT, 0666, 1);
     if (sem == SEM_FAILED) {
-        panic(1, "sem_open failed for %s\n", prd);
+        panic(1, "sem_open failed for %s\n", name);
     }
 
     TCHK(sem_wait(sem)); // lock the semaphore
@@ -23,9 +26,9 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     CHK(fd = open(prd, O_RDWR | O_TRUNC | O_CREAT, 0666)); // delete contents
     CHK(close(fd));                                        // close the file
 
-    TCHK(sem_post(sem));   // unlock the semaphore
-    TCHK(sem_close(sem));  // close the semaphore
-    TCHK(sem_unlink(prd)); // remove the semaphore
+    TCHK(sem_post(sem));    // unlock the semaphore
+    TCHK(sem_close(sem));   // close the semaphore
+    TCHK(sem_unlink(name)); // remove the semaphore
 }
 
 /**

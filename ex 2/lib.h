@@ -38,6 +38,9 @@
 
 #define VERBOSE 1      // 0 or 1
 #define PRD_MAX_LEN 10 // max length of product name
+#define SEM_DFF_LEN 5  // max length of semaphore id (diff .sell and .buy)
+
+#define SEM_MAX_LEN PRD_MAX_LEN + SEM_DFF_LEN
 
 #define RST "\x1b[m\x1b[0m"
 
@@ -91,6 +94,15 @@ int strtoi(const char *restrict nptr, int (*f)(int));
  * @param fmt suitable format string (max `PRD_MAX_LEN` characters)
  */
 void set_prd(char *restrict prd, const char *restrict fmt, ...);
+
+/**
+ * @brief set a semaphore name from a product name.
+ *
+ * @param act 0 for the producer, 1 for the consumer
+ * @param sem_name semaphore name to set
+ * @param fmt formated product name (max `PRD_MAX_LEN` characters)
+ */
+void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...);
 
 /**
  * @brief print debug message if VERBOSE is set.
