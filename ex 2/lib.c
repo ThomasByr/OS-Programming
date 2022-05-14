@@ -48,7 +48,7 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...) {
     prd[PRD_MAX_LEN] = '\0';
 }
 
-void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...) {
+void set_sem(int act, char *restrict sem_name, char *restrict fmt, ...) {
     int n;
     char p[PRD_MAX_LEN + 1];
     va_list ap;
@@ -74,6 +74,16 @@ void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...) {
     sem_name[SEM_MAX_LEN] = '\0';
 }
 
+void named_sem_init(sem_t **sem, const char *name, int oflags, ...) {
+    va_list ap;
+    va_start(ap, oflags);
+
+    *sem = sem_open(name, oflags, va_arg(ap, int));
+    if (*sem == SEM_FAILED) {
+        panic(1, "sem_open failed");
+    }
+}
+
 void debug(int first, const char *restrict fmt, ...) {
     va_list ap;
 
@@ -84,6 +94,10 @@ void debug(int first, const char *restrict fmt, ...) {
         }
         vfprintf(stdout, fmt, ap);
         va_end(ap);
+    }
+    int n = fflush(stdout);
+    if (n == EOF) {
+        panic(1, "fflush failed");
     }
 }
 
@@ -96,4 +110,8 @@ void info(int first, const char *restrict fmt, ...) {
     }
     vfprintf(stdout, fmt, ap);
     va_end(ap);
+    int n = fflush(stdout);
+    if (n == EOF) {
+        panic(1, "fflush failed");
+    }
 }

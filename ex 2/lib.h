@@ -104,7 +104,16 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...);
  * @param sem_name semaphore name to set
  * @param fmt formated product name (max `PRD_MAX_LEN` characters)
  */
-void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...);
+void set_sem(int act, char *restrict sem_name, char *restrict fmt, ...);
+
+/**
+ * @brief initialize a named semaphore.
+ *
+ * @param sem semaphore to initialize
+ * @param name name of the semaphore
+ * @param oflags open flags
+ */
+void named_sem_init(sem_t **sem, const char *name, int oflags, ...);
 
 /**
  * @brief print debug message if VERBOSE is set.

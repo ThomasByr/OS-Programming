@@ -13,22 +13,29 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     debug(1, "closing shop for %s\n", prd);
 
     // named semaphore, created if not existing
-    char name[SEM_MAX_LEN + 1];
-    set_sem_name(0, name, "%s", prd);
+    char sell[SEM_MAX_LEN + 1], buy[SEM_MAX_LEN + 1];
+    set_sem(0, sell, "%s", prd);
+    set_sem(1, buy, "%s", prd);
 
-    sem_t *sem = sem_open(name, O_CREAT, 0666, 1);
-    if (sem == SEM_FAILED) {
-        panic(1, "sem_open failed for %s\n", name);
-    }
+    sem_t *sem_sell, *sem_buy;
+    named_sem_init(&sem_sell, sell, O_CREAT, 0666, 1);
+    named_sem_init(&sem_buy, buy, O_CREAT, 0666, 1);
 
-    TCHK(sem_wait(sem)); // lock the semaphore
+    TCHK(sem_wait(sem_sell)); // wait for possible producer
+    TCHK(sem_wait(sem_buy));  // wait for possible consumer
 
     CHK(fd = open(prd, O_RDWR | O_TRUNC | O_CREAT, 0666)); // delete contents
     CHK(close(fd));                                        // close the file
 
-    TCHK(sem_post(sem));    // unlock the semaphore
-    TCHK(sem_close(sem));   // close the semaphore
-    TCHK(sem_unlink(name)); // remove the semaphore
+    TCHK(sem_post(sem_sell)); // unlock potential new producer
+    TCHK(sem_post(sem_buy));  // unlock potential buyers
+                              //(most certainly will they be angry)
+
+    TCHK(sem_close(sem_sell)); // close the semaphore
+    TCHK(sem_close(sem_buy));  // close the semaphore
+
+    TCHK(sem_unlink(sell)); // remove the semaphore
+    TCHK(sem_unlink(buy));  // remove the semaphore
 }
 
 /**
