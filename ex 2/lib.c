@@ -61,7 +61,7 @@ void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...) {
     }
     va_end(ap);
 
-    char *r = strncat(sem_name, act ? ".buy" : ".sell", SEM_DFF_LEN);
+    char *r = strncat(sem_name, act ? BUY : SELL, SEM_DFF_LEN);
     if (r == NULL) {
         panic(0, "strcat failed");
     }

@@ -38,7 +38,9 @@
 
 #define VERBOSE 1      // 0 or 1
 #define PRD_MAX_LEN 10 // max length of product name
-#define SEM_DFF_LEN 5  // max length of semaphore id (diff .sell and .buy)
+#define SEM_DFF_LEN 6  // max length of semaphore id (diff .sell and .buy)
+#define SELL ".sell"   // suffix for semaphore id for sell action
+#define BUY ".buy"     // suffix for semaphore id for buy action
 
 #define SEM_MAX_LEN PRD_MAX_LEN + SEM_DFF_LEN
 
