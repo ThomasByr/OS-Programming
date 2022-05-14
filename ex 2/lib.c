@@ -50,10 +50,11 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...) {
 
 void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...) {
     int n;
+    char p[PRD_MAX_LEN + 1];
     va_list ap;
 
     va_start(ap, fmt);
-    if ((n = vsnprintf(sem_name, PRD_MAX_LEN + 1, fmt, ap)) > PRD_MAX_LEN) {
+    if ((n = vsnprintf(p, PRD_MAX_LEN + 1, fmt, ap)) > PRD_MAX_LEN) {
         panic(0, "product name too long");
     }
     if (n < 0) {
@@ -61,9 +62,13 @@ void set_sem_name(int act, char *restrict sem_name, char *restrict fmt, ...) {
     }
     va_end(ap);
 
-    char *r = strncat(sem_name, act ? BUY : SELL, SEM_DFF_LEN);
-    if (r == NULL) {
-        panic(0, "strcat failed");
+    p[PRD_MAX_LEN] = '\0';
+    n = snprintf(sem_name, SEM_MAX_LEN + 1, "%s%s", p, act ? BUY : SELL);
+    if (n > SEM_MAX_LEN) {
+        panic(0, "semaphore name too long");
+    }
+    if (n < 0) {
+        panic(0, "snprintf failed");
     }
 
     sem_name[SEM_MAX_LEN] = '\0';
