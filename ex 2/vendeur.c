@@ -53,9 +53,12 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
 
     debug(1, "adding %d product to shop %s\n", qty, prd);
 
-    if ((n = read(fd, &s, sizeof(s))) != sizeof(s)) {
+    if ((n = read(fd, &s, sizeof(s))) == 0) {
         s.qty = 0;
     } // is the file empty?
+    if (n != sizeof(s)) {
+        panic(0, "file %s corrupted", prd);
+    } // we did not read the whole structure properly
     if (n == -1) {
         panic(1, "read");
     } // error reading file
