@@ -59,7 +59,7 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
 
     // named semaphore, created if not existing
     char name[SEM_MAX_LEN + 1];
-    set_sem(0, name, "%s", prd);
+    set_sem(0, name, prd);
 
     sem_t *sem;
     named_sem_init(&sem, name, O_CREAT, 0666, 1);

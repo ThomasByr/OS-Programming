@@ -14,7 +14,7 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
 
     // named semaphore, created if not existing
     char name[SEM_MAX_LEN + 1];
-    set_sem(0, name, "%s", prd);
+    set_sem(0, name, prd);
 
     sem_t *sem;
     named_sem_init(&sem, name, O_CREAT, 0666, 1);
@@ -27,6 +27,8 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     TCHK(sem_post(sem)); // unlock potential new producer or customer
 
     TCHK(sem_close(sem)); // close the semaphore
+
+    debug(0, "\t%s closed\n", prd);
 }
 
 /**
@@ -40,7 +42,7 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     struct shop s;
     // named semaphore, created if not existing
     char name[SEM_MAX_LEN + 1];
-    set_sem(0, name, "%s", prd);
+    set_sem(0, name, prd);
 
     sem_t *sem;
     named_sem_init(&sem, name, O_CREAT, 0666, 1);
@@ -69,6 +71,8 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
 
     TCHK(sem_post(sem));  // unlock potential new producer or consumer
     TCHK(sem_close(sem)); // close the semaphore
+
+    debug(0, "\t%s updated\n", prd);
 }
 
 int main(int argc, char *argv[]) {
