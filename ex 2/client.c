@@ -53,7 +53,7 @@ void display_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
  * @return int - number of products bought
  */
 int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
-    int fd, num = 0;
+    int fd, n, num = 0;
 
     debug(1, "buying %d product from shop %s\n", qty, prd);
 
@@ -69,16 +69,29 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
 
     struct shop s;
-    CHK(read(fd, &s, sizeof(s)));
+    CHK(n = read(fd, &s, sizeof(s)));
 
-    if (s.qty >= qty) {
-        s.qty -= qty;
-        CHK(write(fd, &s, sizeof(s)));
-        num = qty;
-    } else {
-        num = s.qty;
-        s.qty = 0;
-        CHK(write(fd, &s, sizeof(s)));
+    if (n == 0) {
+        debug(0, "\tshop %s has closed\n", prd);
+        num = -1;
+    }
+    if (n > 0 && n != sizeof(s)) {
+        panic(0, "file %s corrupted", prd);
+    }
+
+    CHK(lseek(fd, 0, SEEK_SET));
+
+    if (n == sizeof(s) && s.qty > 0) {
+        if (s.qty >= qty) {
+            s.qty -= qty;
+            CHK(write(fd, &s, sizeof(s)));
+            num = qty;
+        } else {
+            num = s.qty;
+            s.qty = 0;
+            CHK(write(fd, &s, sizeof(s)));
+        }
+        debug(0, "\told_qty = %d -> new_qty = %d\n", s.qty + qty, s.qty);
     }
 
     CHK(close(fd));
@@ -96,8 +109,22 @@ struct targ {
 
 void *tf(void *arg) {
     struct targ *t = (struct targ *)arg;
+    int run = 1;
 
-    (void)t;
+    debug(1, "thread %lu: buying %d product from shop %s\n", pthread_self(),
+          t->qty, t->prd);
+
+    while (run) {
+        int num = buy_prd(t->prd, t->qty);
+
+        if (num == -1) {
+            run = 0; // the shop is closed
+        } else if (num == t->qty) {
+            run = 0; // we have bought all we wanted
+        } else {
+            t->qty -= num;
+        }
+    }
     return NULL;
 }
 

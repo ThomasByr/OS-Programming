@@ -56,7 +56,7 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     if ((n = read(fd, &s, sizeof(s))) == 0) {
         s.qty = 0;
     } // is the file empty?
-    if (n != sizeof(s)) {
+    if (n > 0 && n != sizeof(s)) {
         panic(0, "file %s corrupted", prd);
     } // we did not read the whole structure properly
     if (n == -1) {
