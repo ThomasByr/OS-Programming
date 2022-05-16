@@ -116,3 +116,19 @@ void info(int first, const char *restrict fmt, ...) {
         panic(1, "fflush failed");
     }
 }
+
+void *xmalloc(size_t size) {
+    // void *p = sbrk(0);
+    // void *request = sbrk(size);
+    // if (request == (void *)-1) {
+    //     panic(1, "sbrk failure");
+    // }
+    // assert(p == request); // Not thread safe.
+    // return p;
+
+    void *p = malloc(size);
+    if (p == NULL) {
+        panic(1, "malloc failure");
+    }
+    return p;
+}

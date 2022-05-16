@@ -75,10 +75,10 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
         s.qty -= qty;
         CHK(write(fd, &s, sizeof(s)));
         num = qty;
-        // } else {
-        //     num = s.qty;
-        //     s.qty = 0;
-        //     CHK(write(fd, &s, sizeof(s)));
+    } else {
+        num = s.qty;
+        s.qty = 0;
+        CHK(write(fd, &s, sizeof(s)));
     }
 
     CHK(close(fd));
@@ -89,12 +89,16 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     return num;
 }
 
-int all(int *qty, int n) {
-    int i, sum = 0;
-    for (i = 0; i < n; i++) {
-        sum += qty[i];
-    }
-    return sum == 0;
+struct targ {
+    char prd[PRD_MAX_LEN + 1];
+    int qty;
+};
+
+void *tf(void *arg) {
+    struct targ *t = (struct targ *)arg;
+
+    (void)t;
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -123,17 +127,26 @@ int main(int argc, char *argv[]) {
 
     /* performing the action */
 
-    // loop until all products are bought
-    // or until all needed product are not available
-    int i = 0;
-    while (!all(qty, n)) {
-        if (qty[i] > 0) {
-            int num = buy_prd(prd[i], qty[i]);
-            qty[i] -= num;
-            debug(1, "bought %d product(s) of %s\n", num, prd[i]);
-        }
-        i = (i + 1) % n;
+    // launch threads
+    // each thread will attempt to buy a product from the shop
+    // if the product is not available, the thread will wait
+    // until the product becomes available or the shop is closed
+    struct targ *t = xmalloc(n * sizeof(struct targ));
+    for (int i = 0; i < n; i++) {
+        strncpy(t[i].prd, prd[i], PRD_MAX_LEN);
+        t[i].qty = qty[i];
+    }
+    pthread_t *th = xmalloc(n * sizeof(pthread_t));
+    for (int i = 0; i < n; i++) {
+        TCHK(pthread_create(&th[i], NULL, tf, &t[i]));
     }
 
+    // wait for all threads to finish
+    for (int i = 0; i < n; i++) {
+        TCHK(pthread_join(th[i], NULL));
+    }
+
+    free(t);
+    free(th);
     return EXIT_SUCCESS;
 }

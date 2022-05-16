@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
@@ -128,3 +129,11 @@ void debug(int first, const char *restrict fmt, ...);
  * @param fmt formated message to print
  */
 void info(int first, const char *restrict fmt, ...);
+
+/**
+ * @brief allocates memory and panics if it fails.
+ *
+ * @param size size of the memory to allocate
+ * @return void* - pointer to the allocated memory
+ */
+void *xmalloc(size_t size);
