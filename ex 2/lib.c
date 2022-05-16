@@ -41,7 +41,7 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...) {
         panic(0, "product name too long");
     }
     if (n < 0) {
-        panic(0, "vsnprintf failed");
+        panic(0, "vsnprintf failure");
     }
     va_end(ap);
 
@@ -58,7 +58,7 @@ void set_sem(int id, char *restrict sem_name, char *restrict fmt, ...) {
         panic(0, "product name too long");
     }
     if (n < 0) {
-        panic(0, "vsnprintf failed");
+        panic(0, "vsnprintf failure");
     }
     va_end(ap);
 
@@ -69,7 +69,7 @@ void set_sem(int id, char *restrict sem_name, char *restrict fmt, ...) {
         panic(0, "semaphore name too long");
     }
     if (n < 0) {
-        panic(0, "snprintf failed");
+        panic(0, "snprintf failure");
     }
 
     sem_name[SEM_MAX_LEN] = '\0';
@@ -81,7 +81,7 @@ void named_sem_init(sem_t **sem, const char *name, int oflags, ...) {
 
     *sem = sem_open(name, oflags, va_arg(ap, int));
     if (*sem == SEM_FAILED) {
-        panic(1, "sem_open failed");
+        panic(1, "sem_open failure");
     }
 }
 
@@ -98,7 +98,7 @@ void debug(int first, const char *restrict fmt, ...) {
     }
     int n = fflush(stdout);
     if (n == EOF) {
-        panic(1, "fflush failed");
+        panic(1, "fflush failure");
     }
 }
 
@@ -113,7 +113,7 @@ void info(int first, const char *restrict fmt, ...) {
     va_end(ap);
     int n = fflush(stdout);
     if (n == EOF) {
-        panic(1, "fflush failed");
+        panic(1, "fflush failure");
     }
 }
 
