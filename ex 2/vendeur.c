@@ -13,26 +13,20 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     debug(1, "closing shop for %s\n", prd);
 
     // named semaphore, created if not existing
-    char sell[SEM_MAX_LEN + 1], buy[SEM_MAX_LEN + 1];
-    set_sem(0, sell, "%s", prd);
-    set_sem(1, buy, "%s", prd);
+    char name[SEM_MAX_LEN + 1];
+    set_sem(0, name, "%s", prd);
 
-    sem_t *sem_sell, *sem_buy;
-    named_sem_init(&sem_sell, sell, O_CREAT, 0666, 1);
-    named_sem_init(&sem_buy, buy, O_CREAT, 0666, 1);
+    sem_t *sem;
+    named_sem_init(&sem, name, O_CREAT, 0666, 1);
 
-    TCHK(sem_wait(sem_sell)); // wait for possible producer
-    TCHK(sem_wait(sem_buy));  // wait for possible consumer
+    TCHK(sem_wait(sem)); // wait for possible producer or customer
 
-    CHK(fd = open(prd, O_RDWR | O_TRUNC | O_CREAT, 0666)); // delete contents
-    CHK(close(fd));                                        // close the file
+    CHK(fd = open(prd, O_RDWR | O_TRUNC, 0666)); // delete contents
+    CHK(close(fd));                              // close the file
 
-    TCHK(sem_post(sem_sell)); // unlock potential new producer
-    TCHK(sem_post(sem_buy));  // unlock potential buyers
-                              //(most certainly will they be angry)
+    TCHK(sem_post(sem)); // unlock potential new producer or customer
 
-    TCHK(sem_close(sem_sell)); // close the semaphore
-    TCHK(sem_close(sem_buy));  // close the semaphore
+    TCHK(sem_close(sem)); // close the semaphore
 }
 
 /**
@@ -45,16 +39,13 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     int fd, n;
     struct shop s;
     // named semaphore, created if not existing
-    char sell[SEM_MAX_LEN + 1], buy[SEM_MAX_LEN + 1];
-    set_sem(0, sell, "%s", prd);
-    set_sem(1, buy, "%s", prd);
+    char name[SEM_MAX_LEN + 1];
+    set_sem(0, name, "%s", prd);
 
-    sem_t *sem_sell, *sem_buy;
-    named_sem_init(&sem_sell, sell, O_CREAT, 0666, 1);
-    named_sem_init(&sem_buy, buy, O_CREAT, 0666, 1);
+    sem_t *sem;
+    named_sem_init(&sem, name, O_CREAT, 0666, 1);
 
-    TCHK(sem_wait(sem_sell)); // wait for possible producer
-    TCHK(sem_wait(sem_buy));  // wait for possible consumer
+    TCHK(sem_wait(sem)); // wait for possible producer or consumer
 
     CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
 
@@ -76,11 +67,8 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
 
     CHK(close(fd));
 
-    TCHK(sem_post(sem_sell)); // unlock potential new producer
-    TCHK(sem_post(sem_buy));  // unlock potential buyers
-
-    TCHK(sem_close(sem_sell)); // close the semaphore
-    TCHK(sem_close(sem_buy));  // close the semaphore
+    TCHK(sem_post(sem));  // unlock potential new producer or consumer
+    TCHK(sem_close(sem)); // close the semaphore
 }
 
 int main(int argc, char *argv[]) {

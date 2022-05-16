@@ -48,7 +48,7 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...) {
     prd[PRD_MAX_LEN] = '\0';
 }
 
-void set_sem(int act, char *restrict sem_name, char *restrict fmt, ...) {
+void set_sem(int id, char *restrict sem_name, char *restrict fmt, ...) {
     int n;
     char p[PRD_MAX_LEN + 1];
     va_list ap;
@@ -63,7 +63,8 @@ void set_sem(int act, char *restrict sem_name, char *restrict fmt, ...) {
     va_end(ap);
 
     p[PRD_MAX_LEN] = '\0';
-    n = snprintf(sem_name, SEM_MAX_LEN + 1, "%s%s", p, act ? BUY : SELL);
+
+    n = snprintf(sem_name, SEM_MAX_LEN + 1, "%s.%d", p, id);
     if (n > SEM_MAX_LEN) {
         panic(0, "semaphore name too long");
     }
@@ -90,7 +91,7 @@ void debug(int first, const char *restrict fmt, ...) {
     if (VERBOSE) {
         va_start(ap, fmt);
         if (first) {
-            fprintf(stdout, FG_GRN "  DEBUG: " RST);
+            fprintf(stdout, FG_GRN "\n  DEBUG: " RST);
         }
         vfprintf(stdout, fmt, ap);
         va_end(ap);
@@ -106,7 +107,7 @@ void info(int first, const char *restrict fmt, ...) {
 
     va_start(ap, fmt);
     if (first) {
-        fprintf(stdout, FG_BLU "   INFO: " RST);
+        fprintf(stdout, FG_BLU "\n   INFO: " RST);
     }
     vfprintf(stdout, fmt, ap);
     va_end(ap);

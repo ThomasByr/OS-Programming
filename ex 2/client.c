@@ -54,14 +54,47 @@ void display_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
  */
 int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     int fd, num = 0;
-    // CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
-    (void)fd;
 
     debug(1, "buying %d product from shop %s\n", qty, prd);
 
-    // todo: implement
+    // named semaphore, created if not existing
+    char name[SEM_MAX_LEN + 1];
+    set_sem(0, name, "%s", prd);
+
+    sem_t *sem;
+    named_sem_init(&sem, name, O_CREAT, 0666, 1);
+
+    TCHK(sem_wait(sem)); // wait for possible producer or consumer
+
+    CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
+
+    struct shop s;
+    CHK(read(fd, &s, sizeof(s)));
+
+    if (s.qty >= qty) {
+        s.qty -= qty;
+        CHK(write(fd, &s, sizeof(s)));
+        num = qty;
+        // } else {
+        //     num = s.qty;
+        //     s.qty = 0;
+        //     CHK(write(fd, &s, sizeof(s)));
+    }
+
+    CHK(close(fd));
+
+    TCHK(sem_post(sem));  // unlock potential new producer or consumer
+    TCHK(sem_close(sem)); // close the semaphore
 
     return num;
+}
+
+int all(int *qty, int n) {
+    int i, sum = 0;
+    for (i = 0; i < n; i++) {
+        sum += qty[i];
+    }
+    return sum == 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -90,15 +123,16 @@ int main(int argc, char *argv[]) {
 
     /* performing the action */
 
-    int r;
-    for (int i = 0; i < n; i++) {
-        r = buy_prd(prd[i], qty[i]);
-        // todo:
-        // loop until all products are bought or no more products are available
-
-        if (r == 0) {
-            panic(0, "failed to buy %d %s", qty[i], prd[i]);
+    // loop until all products are bought
+    // or until all needed product are not available
+    int i = 0;
+    while (!all(qty, n)) {
+        if (qty[i] > 0) {
+            int num = buy_prd(prd[i], qty[i]);
+            qty[i] -= num;
+            debug(1, "bought %d product(s) of %s\n", num, prd[i]);
         }
+        i = (i + 1) % n;
     }
 
     return EXIT_SUCCESS;

@@ -38,9 +38,7 @@
 
 #define VERBOSE 1      // 0 or 1
 #define PRD_MAX_LEN 10 // max length of product name
-#define SEM_DFF_LEN 6  // max length of semaphore id (diff .sell and .buy)
-#define SELL ".sell"   // suffix for semaphore id for sell action
-#define BUY ".buy"     // suffix for semaphore id for buy action
+#define SEM_DFF_LEN 3  // max length of semaphore id
 
 #define SEM_MAX_LEN PRD_MAX_LEN + SEM_DFF_LEN
 
@@ -100,11 +98,11 @@ void set_prd(char *restrict prd, const char *restrict fmt, ...);
 /**
  * @brief set a semaphore name from a product name.
  *
- * @param act 0 for the producer, 1 for the consumer
+ * @param id suffixe id (max `SEM_DFF_LEN` characters)
  * @param sem_name semaphore name to set
  * @param fmt formated product name (max `PRD_MAX_LEN` characters)
  */
-void set_sem(int act, char *restrict sem_name, char *restrict fmt, ...);
+void set_sem(int id, char *restrict sem_name, char *restrict fmt, ...);
 
 /**
  * @brief initialize a named semaphore.
