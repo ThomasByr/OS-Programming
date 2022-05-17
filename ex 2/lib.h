@@ -37,7 +37,7 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-// #define DEBUG          // comment this line to disable debug messages
+#define DEBUG          // comment this line to disable debug messages
 #define PRD_MAX_LEN 10 // max length of product name
 #define SEM_DFF_LEN 3  // max length of semaphore id
 

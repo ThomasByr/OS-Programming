@@ -57,6 +57,8 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
 
     debug(1, "buying %d product from shop %s\n", qty, prd);
 
+    CHK(fd = open(prd, O_RDWR, 0666));
+
     // named semaphore, created if not existing
     char sem_name[SEM_MAX_LEN + 1], cnd_name[SEM_MAX_LEN + 1];
     set_sem(0, sem_name, prd);
@@ -68,8 +70,6 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
 
     TCHK(sem_wait(cnd)); // wait for the condition
     TCHK(sem_wait(sem)); // wait for possible producer or consumer
-
-    CHK(fd = open(prd, O_RDWR, 0666));
 
     struct shop s;
     CHK(n = read(fd, &s, sizeof(s)));
