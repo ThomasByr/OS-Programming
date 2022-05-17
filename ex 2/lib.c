@@ -4,15 +4,33 @@ noreturn void panic(int syserr, const char *restrict fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
+    fprintf(stderr, FG_RED "\n  ERROR: " RST);
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
     va_end(ap);
 
     if (syserr == 1) {
-        perror("");
+        perror("\t");
     }
 
     exit(EXIT_FAILURE);
+}
+
+void snprintf_s(char *restrict str, size_t size, const char *restrict fmt,
+                ...) {
+    int n;
+    va_list ap;
+
+    va_start(ap, fmt);
+    n = vsnprintf(str, size, fmt, ap);
+    va_end(ap);
+
+    if (n < 0) {
+        panic(1, "vsnprintf failure");
+    }
+    if ((size_t)n >= size) {
+        panic(1, "format string too long");
+    }
 }
 
 int strtoi(const char *restrict nptr, int (*f)(int)) {
@@ -64,13 +82,7 @@ void set_sem(int id, char *restrict sem_name, char *restrict fmt, ...) {
 
     p[PRD_MAX_LEN] = '\0';
 
-    n = snprintf(sem_name, SEM_MAX_LEN + 1, "%s.%d", p, id);
-    if (n > SEM_MAX_LEN) {
-        panic(0, "semaphore name too long");
-    }
-    if (n < 0) {
-        panic(0, "snprintf failure");
-    }
+    snprintf_s(sem_name, SEM_MAX_LEN + 1, "%s.%d", p, id);
 
     sem_name[SEM_MAX_LEN] = '\0';
 }
@@ -88,18 +100,23 @@ void named_sem_init(sem_t **sem, const char *name, int oflags, ...) {
 void debug(int first, const char *restrict fmt, ...) {
     va_list ap;
 
-    if (VERBOSE) {
-        va_start(ap, fmt);
-        if (first) {
-            fprintf(stdout, FG_GRN "\n  DEBUG: " RST);
-        }
-        vfprintf(stdout, fmt, ap);
-        va_end(ap);
+#ifndef DEBUG
+    (void)ap;
+    (void)first;
+    (void)fmt;
+#else
+    va_start(ap, fmt);
+    if (first) {
+        fprintf(stdout, FG_GRN "\n  DEBUG: " RST);
     }
+    vfprintf(stdout, fmt, ap);
+    va_end(ap);
+
     int n = fflush(stdout);
     if (n == EOF) {
         panic(1, "fflush failure");
     }
+#endif
 }
 
 void info(int first, const char *restrict fmt, ...) {

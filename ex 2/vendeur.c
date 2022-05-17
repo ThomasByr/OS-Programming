@@ -13,20 +13,25 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     debug(1, "closing shop for %s\n", prd);
 
     // named semaphore, created if not existing
-    char name[SEM_MAX_LEN + 1];
-    set_sem(0, name, prd);
+    char sem_name[SEM_MAX_LEN + 1], cnd_name[SEM_MAX_LEN + 1];
+    set_sem(0, sem_name, prd);
+    set_sem(1, cnd_name, prd);
 
-    sem_t *sem;
-    named_sem_init(&sem, name, O_CREAT, 0666, 1);
+    sem_t *sem, *cnd; // file protection, condition
+    named_sem_init(&sem, sem_name, O_CREAT, 0666, 1);
+    named_sem_init(&cnd, cnd_name, O_CREAT, 0666, 0);
 
     TCHK(sem_wait(sem)); // wait for possible producer or customer
 
     CHK(fd = open(prd, O_RDWR | O_TRUNC, 0666)); // delete contents
     CHK(close(fd));                              // close the file
+    CHK(unlink(prd));                            // remove the file
 
     TCHK(sem_post(sem)); // unlock potential new producer or customer
+    TCHK(sem_post(cnd)); // signal the condition
 
     TCHK(sem_close(sem)); // close the semaphore
+    TCHK(sem_close(cnd));
 
     debug(0, "\t%s closed\n", prd);
 }
@@ -40,12 +45,15 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
 void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     int fd, n;
     struct shop s;
-    // named semaphore, created if not existing
-    char name[SEM_MAX_LEN + 1];
-    set_sem(0, name, prd);
 
-    sem_t *sem;
-    named_sem_init(&sem, name, O_CREAT, 0666, 1);
+    // named semaphore, created if not existing
+    char sem_name[SEM_MAX_LEN + 1], cnd_name[SEM_MAX_LEN + 1];
+    set_sem(0, sem_name, prd);
+    set_sem(1, cnd_name, prd);
+
+    sem_t *sem, *cnd; // file protection, condition
+    named_sem_init(&sem, sem_name, O_CREAT, 0666, 1);
+    named_sem_init(&cnd, cnd_name, O_CREAT, 0666, 0);
 
     TCHK(sem_wait(sem)); // wait for possible producer or consumer
 
@@ -72,8 +80,11 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
 
     CHK(close(fd));
 
-    TCHK(sem_post(sem));  // unlock potential new producer or consumer
+    TCHK(sem_post(sem)); // unlock potential new producer or consumer
+    TCHK(sem_post(cnd)); // signal the condition
+
     TCHK(sem_close(sem)); // close the semaphore
+    TCHK(sem_close(cnd));
 
     debug(0, "\t%s updated\n", prd);
 }

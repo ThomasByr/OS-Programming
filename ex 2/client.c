@@ -30,7 +30,7 @@ int group_by_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
 }
 
 /**
- * @brief print the list of products and quantities if VERBOSE is set.
+ * @brief print the list of products and quantities if DEBUG is set.
  *
  * @param prd product names
  * @param qty quantities
@@ -58,21 +58,25 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     debug(1, "buying %d product from shop %s\n", qty, prd);
 
     // named semaphore, created if not existing
-    char name[SEM_MAX_LEN + 1];
-    set_sem(0, name, prd);
+    char sem_name[SEM_MAX_LEN + 1], cnd_name[SEM_MAX_LEN + 1];
+    set_sem(0, sem_name, prd);
+    set_sem(1, cnd_name, prd);
 
-    sem_t *sem;
-    named_sem_init(&sem, name, O_CREAT, 0666, 1);
+    sem_t *sem, *cnd; // file protection, condition
+    named_sem_init(&sem, sem_name, O_CREAT, 0666, 1);
+    named_sem_init(&cnd, cnd_name, O_CREAT, 0666, 0);
 
+    TCHK(sem_wait(cnd)); // wait for the condition
     TCHK(sem_wait(sem)); // wait for possible producer or consumer
 
-    CHK(fd = open(prd, O_RDWR | O_CREAT, 0666));
+    CHK(fd = open(prd, O_RDWR, 0666));
 
     struct shop s;
     CHK(n = read(fd, &s, sizeof(s)));
 
     if (n == 0) {
         debug(0, "\tshop %s has closed\n", prd);
+        TCHK(sem_post(cnd));
         num = -1;
     }
     if (n > 0 && n != sizeof(s)) {
@@ -84,48 +88,26 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     if (n == sizeof(s) && s.qty > 0) {
         if (s.qty >= qty) {
             s.qty -= qty;
-            CHK(write(fd, &s, sizeof(s)));
             num = qty;
         } else {
             num = s.qty;
             s.qty = 0;
-            CHK(write(fd, &s, sizeof(s)));
         }
-        debug(0, "\told_qty = %d -> new_qty = %d\n", s.qty + qty, s.qty);
+        CHK(write(fd, &s, sizeof(s)));
+        debug(0, "\told_qty = %d -> new_qty = %d\n", s.qty + num, s.qty);
     }
 
     CHK(close(fd));
 
-    TCHK(sem_post(sem));  // unlock potential new producer or consumer
+    TCHK(sem_post(sem)); // unlock potential new producer or consumer
+    if (s.qty > 0) {
+        TCHK(sem_post(cnd)); // signal the condition
+    }
+
     TCHK(sem_close(sem)); // close the semaphore
+    TCHK(sem_close(cnd));
 
     return num;
-}
-
-struct targ {
-    char prd[PRD_MAX_LEN + 1];
-    int qty;
-};
-
-void *tf(void *arg) {
-    struct targ *t = (struct targ *)arg;
-    int run = 1;
-
-    debug(1, "thread %lu: buying %d product from shop %s\n", pthread_self(),
-          t->qty, t->prd);
-
-    while (run) {
-        int num = buy_prd(t->prd, t->qty);
-
-        if (num == -1) {
-            run = 0; // the shop is closed
-        } else if (num == t->qty) {
-            run = 0; // we have bought all we wanted
-        } else {
-            t->qty -= num;
-        }
-    }
-    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -154,26 +136,22 @@ int main(int argc, char *argv[]) {
 
     /* performing the action */
 
-    // launch threads
-    // each thread will attempt to buy a product from the shop
-    // if the product is not available, the thread will wait
-    // until the product becomes available or the shop is closed
-    struct targ *t = xmalloc(n * sizeof(struct targ));
-    for (int i = 0; i < n; i++) {
-        strncpy(t[i].prd, prd[i], PRD_MAX_LEN);
-        t[i].qty = qty[i];
-    }
-    pthread_t *th = xmalloc(n * sizeof(pthread_t));
-    for (int i = 0; i < n; i++) {
-        TCHK(pthread_create(&th[i], NULL, tf, &t[i]));
+    // for each product
+    // if the shop is closed, quit
+    // if the shop is open, buy the desired quantity if possible
+    // if the product is not available, wait until it is available
+    int i, _qty, num;
+    for (i = 0; i < n; i++) {
+        _qty = qty[i];
+
+        while (_qty > 0) {
+            num = buy_prd(prd[i], _qty);
+            if (num == -1) {
+                panic(0, "shop %s closed", prd[i]);
+            }
+            _qty -= num;
+        }
     }
 
-    // wait for all threads to finish
-    for (int i = 0; i < n; i++) {
-        TCHK(pthread_join(th[i], NULL));
-    }
-
-    free(t);
-    free(th);
     return EXIT_SUCCESS;
 }

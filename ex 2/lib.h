@@ -37,7 +37,7 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-#define VERBOSE 1      // 0 or 1
+// #define DEBUG          // comment this line to disable debug messages
 #define PRD_MAX_LEN 10 // max length of product name
 #define SEM_DFF_LEN 3  // max length of semaphore id
 
@@ -80,6 +80,15 @@ struct shop {
 noreturn void panic(int syserr, const char *restrict fmt, ...);
 
 /**
+ * @brief safe call to snprintf.
+ *
+ * @param str string to write to
+ * @param size size of the string
+ * @param fmt formated message to print
+ */
+void snprintf_s(char *restrict str, size_t size, const char *restrict fmt, ...);
+
+/**
  * @brief perform a string to int conversion.
  *
  * @param nptr string to convert
@@ -115,7 +124,7 @@ void set_sem(int id, char *restrict sem_name, char *restrict fmt, ...);
 void named_sem_init(sem_t **sem, const char *name, int oflags, ...);
 
 /**
- * @brief print debug message if VERBOSE is set.
+ * @brief print debug message if DEBUG is set.
  *
  * @param first 1 if the first message of a series, 0 otherwise
  * @param fmt formated message to print
