@@ -76,7 +76,10 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
 
     if (n == 0) {
         debug(0, "\tshop %s has closed\n", prd);
-        TCHK(sem_post(cnd));
+        TCHK(sem_post(cnd)); // allow the next consumer to panic
+
+        TCHK(sem_unlink(sem_name)); // remove the semaphore
+        TCHK(sem_unlink(cnd_name));
         num = -1;
     }
     if (n > 0 && n != sizeof(s)) {
@@ -101,7 +104,7 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
 
     TCHK(sem_post(sem)); // unlock potential new producer or consumer
     if (s.qty > 0) {
-        TCHK(sem_post(cnd)); // signal the condition
+        TCHK(sem_post(cnd)); // signal the condition if shop is not empty
     }
 
     TCHK(sem_close(sem)); // close the semaphore
