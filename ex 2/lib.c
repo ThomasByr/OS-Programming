@@ -98,13 +98,13 @@ void named_sem_init(sem_t **sem, const char *name, int oflags, ...) {
 }
 
 void debug(int first, const char *restrict fmt, ...) {
-    va_list ap;
 
 #ifndef DEBUG
-    (void)ap;
     (void)first;
     (void)fmt;
 #else
+    va_list ap;
+
     va_start(ap, fmt);
     if (first) {
         fprintf(stdout, FG_GRN "\n  DEBUG: " RST);
