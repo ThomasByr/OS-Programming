@@ -147,3 +147,10 @@ void info(int first, const char *restrict fmt, ...);
  * @return void* - pointer to the allocated memory
  */
 void *xmalloc(size_t size);
+
+/**
+ * @brief init shop structure.
+ *
+ * @param s shop structure
+ */
+void shop_init(struct shop *s);

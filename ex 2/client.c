@@ -72,6 +72,7 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     TCHK(sem_wait(sem)); // wait for possible producer or consumer
 
     struct shop s;
+    shop_init(&s);
     CHK(n = read(fd, &s, sizeof(s)));
 
     if (n == 0) {
@@ -83,7 +84,7 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
         panic(0, "file %s corrupted", prd);
     }
 
-    CHK(lseek(fd, 0, SEEK_SET));
+    CHK(lseek(fd, 0, SEEK_SET)); // rewind
 
     if (n == sizeof(s) && s.qty > 0) {
         if (s.qty >= qty) {
@@ -104,8 +105,8 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
         TCHK(sem_post(cnd)); // signal the condition if shop is not empty
     }
 
-    TCHK(sem_close(sem)); // close the semaphore
-    TCHK(sem_close(cnd));
+    CHK(sem_close(sem)); // close the semaphore
+    CHK(sem_close(cnd));
 
     return num;
 }

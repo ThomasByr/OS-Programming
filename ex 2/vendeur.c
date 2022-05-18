@@ -30,8 +30,8 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     TCHK(sem_post(sem)); // unlock potential new producer or customer
     TCHK(sem_post(cnd)); // signal the condition
 
-    TCHK(sem_close(sem)); // close the semaphore
-    TCHK(sem_close(cnd));
+    CHK(sem_close(sem)); // close the semaphore
+    CHK(sem_close(cnd));
 
     CHK(sem_unlink(sem_name)); // remove the semaphore
     CHK(sem_unlink(cnd_name));
@@ -48,6 +48,7 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
 void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     int fd, n;
     struct shop s;
+    shop_init(&s);
 
     // named semaphore, created if not existing
     char sem_name[SEM_MAX_LEN + 1], cnd_name[SEM_MAX_LEN + 1];
@@ -78,7 +79,7 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
 
     // update the file
     s.qty += qty;
-    CHK(lseek(fd, 0, SEEK_SET));
+    CHK(lseek(fd, 0, SEEK_SET)); // rewind
     CHK(write(fd, &s, sizeof(s)));
 
     CHK(close(fd));
@@ -86,8 +87,8 @@ void add_to_shop(char prd[PRD_MAX_LEN + 1], int qty) {
     TCHK(sem_post(sem)); // unlock potential new producer or consumer
     TCHK(sem_post(cnd)); // signal the condition
 
-    TCHK(sem_close(sem)); // close the semaphore
-    TCHK(sem_close(cnd));
+    CHK(sem_close(sem)); // close the semaphore
+    CHK(sem_close(cnd));
 
     debug(0, "\t%s updated\n", prd);
 }

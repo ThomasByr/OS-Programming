@@ -149,3 +149,8 @@ void *xmalloc(size_t size) {
     }
     return p;
 }
+
+void shop_init(struct shop *s) {
+    s->qty = 0;
+    s->nwc = 0;
+}
