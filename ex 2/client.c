@@ -65,8 +65,11 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     set_sem(1, cnd_name, prd);
 
     sem_t *sem, *cnd; // file protection, condition
-    named_sem_init(&sem, sem_name, O_CREAT, 0666, 1);
-    named_sem_init(&cnd, cnd_name, O_CREAT, 0666, 0);
+
+    // these should be created when the shop is opened
+    // if the shop does not exist, we should panic anyway
+    named_sem_init(&sem, sem_name, 0, 0666);
+    named_sem_init(&cnd, cnd_name, 0, 0666);
 
     TCHK(sem_wait(cnd)); // wait for the condition
     TCHK(sem_wait(sem)); // wait for possible producer or consumer
