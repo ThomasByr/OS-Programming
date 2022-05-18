@@ -33,6 +33,9 @@ void close_shop(char prd[PRD_MAX_LEN + 1]) {
     TCHK(sem_close(sem)); // close the semaphore
     TCHK(sem_close(cnd));
 
+    CHK(sem_unlink(sem_name)); // remove the semaphore
+    CHK(sem_unlink(cnd_name));
+
     debug(0, "\t%s closed\n", prd);
 }
 

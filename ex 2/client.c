@@ -77,9 +77,6 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     if (n == 0) {
         debug(0, "\tshop %s has closed\n", prd);
         TCHK(sem_post(cnd)); // allow the next consumer to panic
-
-        TCHK(sem_unlink(sem_name)); // remove the semaphore
-        TCHK(sem_unlink(cnd_name));
         num = -1;
     }
     if (n > 0 && n != sizeof(s)) {
