@@ -1,26 +1,17 @@
 #pragma once
 
-#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <fnmatch.h>
 #include <limits.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdnoreturn.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
-#include <wait.h>
 
 #define CHK(op)            \
     do {                   \
@@ -37,7 +28,7 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-// #define DEBUG          // comment this line to disable debug messages
+#define DEBUG          // comment this line to disable debug messages
 #define PRD_MAX_LEN 10 // max length of product name
 #define SEM_DFF_LEN 3  // max length of semaphore id
 
