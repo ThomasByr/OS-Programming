@@ -88,13 +88,13 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     shop_init(&s);
     CHK(n = read(fd, &s, sizeof(s)));
 
-    if (n == 0) {
-        debug(0, "\tshop %s has closed\n", prd);
-        TCHK(sem_post(sem)); // allow the next consumer to panic
-        TCHK(sem_post(cnd));
-        num = -1;
-    }
-    if (n > 0 && n != sizeof(s)) {
+    // if (n == 0) {
+    //     debug(0, "\tshop %s has closed\n", prd);
+    //     TCHK(sem_post(sem)); // allow the next consumer to panic
+    //     TCHK(sem_post(cnd));
+    //     num = -1;
+    // }
+    if (n != sizeof(s)) {
         panic(0, "file %s corrupted", prd);
     }
 
