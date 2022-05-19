@@ -59,7 +59,7 @@
  */
 struct shop {
     int qty; // quantity of the product
-    int nwc; // number of waiting consumers
+    int nwc; // number of waiting consumers !unused!
 };
 
 /**
