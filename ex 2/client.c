@@ -56,7 +56,9 @@ void display_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
  * @return int - number of products bought
  */
 int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
-    int fd, n, num = 0;
+    int fd, n, next = 0, num = 0;
+    struct shop s;
+    shop_init(&s);
 
     CHK(fd = open(prd, O_RDWR, 0666));
 
@@ -89,30 +91,23 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     //     return -1;
     // }
 
-    struct shop s;
-    shop_init(&s);
     CHK(n = read(fd, &s, sizeof(s)));
 
     if (n == 0) {
         debug(0, "\tshop %s has closed\n", prd);
-        TCHK(sem_post(sem)); // allow the next consumer to panic
-        TCHK(sem_post(cnd));
+        next = 1; // allow the next consumer to panic
         num = -1;
-    }
-    if (n != sizeof(s)) {
+    } else if (n != sizeof(s)) {
         panic(0, "file %s corrupted", prd);
     }
 
     CHK(lseek(fd, 0, SEEK_SET)); // rewind
 
     if (n == sizeof(s) && s.qty > 0) {
-        if (s.qty >= qty) {
-            s.qty -= qty;
-            num = qty;
-        } else {
-            num = s.qty;
-            s.qty = 0;
-        }
+        num = min(s.qty, qty);
+        s.qty -= num;
+
+        next = 1; // allow the next consumer in
         CHK(write(fd, &s, sizeof(s)));
         debug(0, "\told_qty = %d -> new_qty = %d\n", s.qty + num, s.qty);
     }
@@ -120,8 +115,8 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     CHK(close(fd));
 
     TCHK(sem_post(sem)); // unlock potential new producer or consumer
-    if (s.qty > 0) {
-        TCHK(sem_post(cnd)); // signal the condition if shop is not empty
+    if (next) {
+        TCHK(sem_post(cnd));
     }
 
     CHK(sem_close(sem)); // close the semaphore
