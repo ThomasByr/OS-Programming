@@ -18,7 +18,10 @@ int group_by_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
             if (strcmp(prd[i], prd[j]) == 0) {
                 qty[i] += qty[j];
                 for (k = j; k < n - 1; k++) {
-                    strncpy(prd[k], prd[k + 1], PRD_MAX_LEN);
+                    if (strlcpy(prd[k], prd[k + 1], PRD_MAX_LEN) >=
+                        PRD_MAX_LEN) {
+                        panic(0, "product name too long");
+                    }
                     qty[k] = qty[k + 1];
                 }
                 n--;

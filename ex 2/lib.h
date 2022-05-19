@@ -140,6 +140,18 @@ void info(int first, const char *restrict fmt, ...);
 void *xmalloc(size_t size);
 
 /**
+ * @brief copies the string pointed to by src, including the terminating null
+ * byte ('\0')
+ *
+ * @param dest destination string
+ * @param src source string
+ * @param n number of characters to copy
+ * @return size_t - the number of characters copied, not including the
+ * terminating null byte
+ */
+size_t strlcpy(char *restrict dest, const char *restrict src, size_t n);
+
+/**
  * @brief init shop structure.
  *
  * @param s shop structure
