@@ -55,6 +55,8 @@ void display_prd(char (*prd)[PRD_MAX_LEN + 1], int *qty, int n) {
 int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     int fd, n, num = 0;
 
+    CHK(fd = open(prd, O_RDWR, 0666));
+
     debug(1, "buying %d product from shop %s\n", qty, prd);
 
     // named semaphore, created if not existing
@@ -72,28 +74,28 @@ int buy_prd(char prd[PRD_MAX_LEN + 1], int qty) {
     TCHK(sem_wait(cnd)); // wait for the condition
     TCHK(sem_wait(sem)); // wait for possible producer or consumer
 
-    fd = open(prd, O_RDWR, 0666);
-    switch (fd) {
-    case -1:
-        debug(0, "\tshop %s has closed\n", prd);
-        TCHK(sem_post(sem));
-        TCHK(sem_post(cnd)); // allow the next consumer to panic
+    // fd = open(prd, O_RDWR, 0666);
+    // switch (fd) {
+    // case -1:
+    //     debug(0, "\tshop %s has closed\n", prd);
+    //     TCHK(sem_post(sem));
+    //     TCHK(sem_post(cnd)); // allow the next consumer to panic
 
-        CHK(sem_close(sem)); // close the semaphore
-        CHK(sem_close(cnd));
-        return -1;
-    }
+    //     CHK(sem_close(sem)); // close the semaphore
+    //     CHK(sem_close(cnd));
+    //     return -1;
+    // }
 
     struct shop s;
     shop_init(&s);
     CHK(n = read(fd, &s, sizeof(s)));
 
-    // if (n == 0) {
-    //     debug(0, "\tshop %s has closed\n", prd);
-    //     TCHK(sem_post(sem)); // allow the next consumer to panic
-    //     TCHK(sem_post(cnd));
-    //     num = -1;
-    // }
+    if (n == 0) {
+        debug(0, "\tshop %s has closed\n", prd);
+        TCHK(sem_post(sem)); // allow the next consumer to panic
+        TCHK(sem_post(cnd));
+        num = -1;
+    }
     if (n != sizeof(s)) {
         panic(0, "file %s corrupted", prd);
     }
